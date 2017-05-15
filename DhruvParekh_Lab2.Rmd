@@ -1,0 +1,208 @@
+---
+title: "DhruvParekh_Lab2"
+output: pdf_document
+---
+##Dhruv Parekh Lab 2
+
+Load the dataset
+```{r}
+ratings<-read.csv("ratings.csv")
+movies<-read.csv("movie.titles.csv")
+library(dplyr)
+```
+
+##Part 1.
+
+1.a Dimensions of the dataset
+```{r}
+dim(ratings)
+uniq_raters<-unique(ratings$userId)
+length(uniq_raters)
+```
+There are 10004 ratings with 671 unique raters
+
+1.b Mean, Median and Standard Deviation of the ratings
+
+```{r}
+mean_rating<-mean(ratings$rating) 
+median_rating<-median(ratings$rating)
+sd_rating<- sd(ratings$rating)
+```
+The mean rating is `r mean_rating`
+
+The median rating is `r median_rating`
+
+The standard deviation is `r sd_rating`
+
+1.c Plot of ratigns
+
+```{r}
+hist(ratings$rating,main="Histogram of Ratings",xlab="Rating")
+```
+
+It can be seen that people prefer rating movies in whole numbers as compared to decimals
+
+2. Link the datasets
+
+```{r}
+ix<-match(ratings$movieId,movies$movieId)
+head(ratings$movieId)
+head(movies$movieId)
+head(ratings$movieId[ix])
+
+#temp<-merge(ratings,movies,by='movieId')
+```
+
+3.a Ratings vs Year
+
+```{r}
+plot(ratings$year,ratings$rating,main="Ratings per year",xlab="Year",ylab="Ratings")
+boxplot(ratings$rating~ratings$year,main="Ratings per year",xlab="Year",ylab="Ratings")
+```
+
+Since the graphs are not readable, we cut the years and break it into few ranges
+
+3.b 
+
+```{r}
+ratings_year<-cut(ratings$year,10)
+boxplot(ratings$rating~ratings_year)
+```
+
+It can be concluded that over the years, people have become more critical of movies.
+
+4.a
+```{r}
+ratings$comedy <- rep(F, nrow=ratings)
+ratings$comedy[grep("Comedy",ratings$genre, ignore.case = TRUE)] <- TRUE
+boxplot(ratings$rating ~ ratings$comedy)
+```
+
+Comedy movies have a lower rating with respect to non-comedy movies
+
+4.b
+```{r}
+t.test(ratings$rating,ratings$comedy)
+```
+
+5. Top rated movies -for each unique movie id calc the average rating with minimum votes required as 5
+```{r}
+m=50
+#ratings2<-ratings%>%
+#  group_by(movieId)%>%
+#  summarise(www=mean(rating),count=n(),w_av=((www*count+mean_rating*m)/(m#+count)))%>%
+#  arrange(desc(w_av))
+totalcount=length(ratings$userId)
+
+ratings3<-ratings%>%
+  group_by(movieId)%>%
+  summarise(n=n(),w_av=weighted.mean(rating))%>%
+  arrange(desc(n))%>%
+  filter(n>250)
+
+##by sir-
+#ix.highest.mean<-which(by(ratings$rating,ratings$movieId,mean)==5)
+#movies[movies$movieId%in%x.highest.mean,"title"]
+
+#ix.highest.sum<-sort(by(ratings$rating,ratings$movieId,sum),decreasing=TRU#E)
+#movies[movies$movieId%in%(ix.highest.sum)[1:15],"title"]
+
+  group_by(movieId)%>%
+  summarise(wmean=weighted.mean(rating))%>%
+  arrange(desc(wmean))
+
+top10<-head(ratings3$movieId,n=10)
+```
+
+The top 10 rated movies are: `r top10`
+
+##Part 2.
+
+1. Examine several distributions
+
+```{r}
+N<-1000
+hist(rexp(N,rate=1))
+hist(runif(N,0,1))
+hist(rpois(N,0.5))
+```
+
+2. Look at the distributions of sums of these samples.
+
+```{r}
+n.samp<-30
+M <- matrix(NA, nrow=N, ncol=n.samp)
+for(j in 1:n.samp) M[,j] <- rexp(N)
+hist(rowSums(M), freq = F)
+curve(dnorm(x, mean(rowSums(M)), sd(rowSums(M))), min(rowSums(M)),
+max(rowSums(M)), add=T, col="red", lwd=2)
+```
+
+3. Replacing it with uniform and poisson distribution 
+
+```{r}
+K <- matrix(NA, nrow=N, ncol=n.samp)
+for(j in 1:n.samp) K[,j] <- runif(N)
+hist(rowSums(K), freq = F)
+curve(dnorm(x, mean(rowSums(K)), sd(rowSums(K))), min(rowSums(K)),
+max(rowSums(K)), add=T, col="red", lwd=2)
+
+L <- matrix(NA, nrow=N, ncol=n.samp)
+for(j in 1:n.samp) L[,j] <- rpois(N,0.5)
+hist(rowSums(L), freq = F)
+curve(dnorm(x, mean(rowSums(L)), sd(rowSums(L))), min(rowSums(L)),
+max(rowSums(L)), add=T, col="red", lwd=2)
+```
+
+
+4. 
+After changing the number of samples from 1000 to 5000
+```{r}
+N1<-10000
+n.samp<-30
+M1 <- matrix(NA, nrow=N1, ncol=n.samp)
+for(j in 1:n.samp) M1[,j] <- rexp(N1)
+hist(rowSums(M1), freq = F)
+curve(dnorm(x, mean(rowSums(M1)), sd(rowSums(M1))), min(rowSums(M1)),
+max(rowSums(M1)), add=T, col="red", lwd=2)
+
+K1 <- matrix(NA, nrow=N1, ncol=n.samp)
+for(j in 1:n.samp) K1[,j] <- runif(N1)
+hist(rowSums(K), freq = F)
+curve(dnorm(x, mean(rowSums(K1)), sd(rowSums(K1))), min(rowSums(K1)),
+max(rowSums(K1)), add=T, col="red", lwd=2)
+
+L1 <- matrix(NA, nrow=N1, ncol=n.samp)
+for(j in 1:n.samp) L1[,j] <- rpois(N1,0.5)
+hist(rowSums(L1), freq = F)
+curve(dnorm(x, mean(rowSums(L1)), sd(rowSums(L1))), min(rowSums(L1)),
+max(rowSums(L1)), add=T, col="red", lwd=2)
+```
+
+For each distribution, as number of samples increases, the tail becomes elongated and the distribution becomes narrower. 
+
+After changing the number of sums taken from 30 to 100
+```{r}
+N2<-1000
+n1.samp<-300
+M2 <- matrix(NA, nrow=N2, ncol=n1.samp)
+for(j in 1:n1.samp) M2[,j] <- rexp(N2)
+hist(rowSums(M2), freq = F)
+curve(dnorm(x, mean(rowSums(M2)), sd(rowSums(M2))), min(rowSums(M2)),
+max(rowSums(M2)), add=T, col="red", lwd=2)
+
+K2 <- matrix(NA, nrow=N2, ncol=n1.samp)
+for(j in 1:n1.samp) K2[,j] <- runif(N2)
+hist(rowSums(K2), freq = F)
+curve(dnorm(x, mean(rowSums(K2)), sd(rowSums(K2))), min(rowSums(K2)),
+max(rowSums(K2)), add=T, col="red", lwd=2)
+
+L2 <- matrix(NA, nrow=N2, ncol=n1.samp)
+for(j in 1:n1.samp) L2[,j] <- rpois(N2,0.5)
+hist(rowSums(L2), freq = F)
+curve(dnorm(x, mean(rowSums(L2)), sd(rowSums(L2))), min(rowSums(L2)),
+max(rowSums(L2)), add=T, col="red", lwd=2)
+
+```
+
+As the number of sums taken increases, the distribution becomes broader.

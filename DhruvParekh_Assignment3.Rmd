@@ -1,0 +1,174 @@
+---
+title: "Assignment 3"
+author: "Dhruv Parekh"
+date: "7 February 2017"
+output: pdf_document
+---
+
+##Question 1a. In a survey, one hundred college students are asked how many hours per week they spend on the Internet.
+
+Each student will provide a numerical value (i.e. number of hours) that can be averaged for all the students and hence the parameter of interest is a mean.
+
+##Question 1b. In a survey, one hundred college students are asked: "What percentage of the time you spend on the Internet is part of your course work?"
+
+Each student will give a numerical value (i.e. percentage of time spent on the internet as part of course work) that can be averaged for all the students. Hence, the parameter of interest is a mean.
+
+##Question 1c. In a survey, one hundred college students are asked whether or not they cited information from Wikipedia in their papers.
+
+The answer of each student is a categorical variable in the form of a 'Yes' or a 'No'. Hence, the parameter of interest is a proportion.
+
+##Question 1d. In a survey, one hundred college students are asked what percentage of their total weekly spending is on alcoholic beverages.
+
+Each student will give a numerical value (i.e. percentage of their toal weekly spending on alcoholic beverages) that can be averaged for all the students. Hence, the parameter of interest is a mean.
+
+##Question 1e. In a sample of one hundred recent college graduates, it is found that 85 percent expect to get a job within one year of their graduation date.
+
+The answer of each student will be a categorical variable i.e. whether they expect to get a job within one year of their graduation date or no. Hence, the parameter of interest is a proportion.
+
+##Question 2.
+
+pt est = 45% = 0.045
+Std error = 1.2%=0.012,
+Conf int of 95%,
+
+conf int = (pt est - 1.96*std error, pt est + 1.96*std error)
+
+conf int = (0.45-1.96*0.012, 0.45+1.96*0.012)=(0.45-0.02352,0.45+0.02352)
+
+conf int = (0.42648,0.47352) or (42.64%,47.35%)
+
+Interpretation: We are 95% confident that the proportion of U.S adults who live with one or more chronic illness lies between 42.64% and 47.35%.
+
+##Question 3a. 
+
+Null hypothesis H0: One ounce serving of potato chips has 130 calories
+Alternate hypothesis Ha: One ounce serving of potato chips does not have 130 calories
+
+##Question 3b.
+```{r}
+smean<-136
+n<-35
+sd<-17
+pmean<-130
+alpha<-0.05
+teststat<-(smean-pmean)/(sd/sqrt(n))
+pvalue_H<-pnorm(teststat,lower.tail = F)
+pvalue_L<-pnorm(-teststat,lower.tail = T)
+pvalue<-pvalue_H+pvalue_L
+```
+
+Test statistic is `r teststat` and p-value is `r pvalue`
+
+##Question 3c.
+The significance value is decided prior to conducting the test. Right now the alpha is 0.05 and the p-value we get is 0.036. By lowering the value of alpha to 0.025, we will be able to avoid type 1 error. Hence, as part of the company, it would be wise to set alpha as 0.025.
+
+##Question 4.
+```{r}
+#install.packages("UsingR")
+library(UsingR)
+height<-get("father.son")
+```
+
+##Question 4a.
+```{r}
+plot(height$fheight,height$sheight,main="Height of Father vs Son",
+     xlab="Height of Father",
+     ylab="Height of Son")
+hist(height$sheight,xlab="Height of son",main="Histogram of height of son")
+corr<-cor(height$fheight,height$sheight)
+```
+
+To begin the exploratory study, we plot the heights of father and son.
+From the plot it can be seen that there seems to be a correlation between the heights 
+of father and son. The histogram plot of heights of son suggests that it is a normally distributed. Next, we find the correlation between the heights of father and son.
+The correaltion value is found to be `r corr` which suggests that there is medium positive correlation between the height of father and son.
+
+
+##Question 4b.
+```{r}
+mod<-lm(sheight~fheight, data=height)
+summary(mod)
+```
+
+Corresponding to the equation, Y(sheight)=B0+B1*fheight
+
+From the summary, B0 = 33.8866, B1= 0.51409
+
+Hence, Y(sheight) = 33.8866 + 0.51409*fheight
+
+So the coefficient estimates can be interpreted as, when father's height is 0,
+son's height is 33.8866. Also, for one inch increase in father's height, son's height increases by 0.51409 inches.
+
+##Question 4c.
+```{r}
+confint(mod,level=0.95)
+```
+
+##Question 4d.
+```{r}
+plot(height$fheight,height$sheight,main="Height of Father Vs Son",
+     xlab="Height of Father",ylab="Height of Son", col='Green')
+abline(mod,col='Red')
+```
+
+
+The above plot shows the relation between the height of father and height of son. The black line is the least squares regression line. It is positive in nature, indicating that an increase in height of father causes an increase in height of son.
+
+##Question 4e.
+```{r}
+names(mod)
+plot(mod$fitted.value,mod$residuals, main="Plot of Residual vs Fitted Value",
+     ylab="Residuals", xlab= "Fitted Value",col='Green')+abline(h=0,col='Red')
+
+```
+
+The residuals are evenly spread across the center. But there is high error as the residual plots are present and are spread far on either side of the center line. Ideally, all the data points on the residual plot should have been 0.
+
+##Question 4f.
+```{r}
+fh<-data.frame(fheight=c(50,55,70,75,90))
+predict(mod,fh)
+```
+
+For the father's height (50,55,70,75,90), the corresponding son's height is (59.59126,62.16172,69.87312,72.44358,80.15498).
+
+##Question 4g.
+The estimate of the height means the response when the predictors are zero. For this plot, the estimate of the height is 33.886 units when the father's height is 0. This is practically not possible.
+The estimate of the slope means the variation in the response when the predictor is changed by a single unit. Here, by increasing the father's height by one unit, the son's height increases by 0.51 units. We cannot extrapolate the points with this model.
+
+
+##Question 5.
+```{r}
+#install.packages("openintro")
+library(openintro)
+data(gifted)
+```
+
+##Question 5a.
+```{r}
+fson<-lm(score~fatheriq,data=gifted)
+summary(fson)
+mson<-lm(score~motheriq,data=gifted)
+summary(mson)
+```
+
+##Question 5b.
+
+```{r}
+confint(fson,level=0.95)
+confint(mson,level=0.95)
+```
+The father's slope is 0.2501 (-0.2051,0.7053)
+
+The mother's slope is 0.4066 (0.2029,0.6102)
+
+##Question 5c.
+Father-child:
+We are 95% confident that the child's mean analytical score will lie be between -0.2051 and 0.7053.
+
+Mother-Chid:
+We are 95% confident that the child's mean analytical score will lie between 0.2029 and 0.6102.
+
+
+##Question 5d.
+There is low positive correlation (0.2501) between the child's analytical score with the father's IQ level. The data suggests that we are 95% confident that the analytical score of the child lies between (-0.2051 and 0.7053) in relation with the father's IQ level. There is low positive correlation (0.4066) between the child's analytical score with the mother's IQ level. However, the child score-mother IQ correlation is stronger or higher as compared to the child score-father IQ correlation. The data suggests that we are 95% confident that the analytical score of the child lies between 0.2029 and 0.6102 in relation with the mother's IQ.

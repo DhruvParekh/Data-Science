@@ -1,0 +1,155 @@
+---
+title: "Assignment 2"
+output: pdf_document
+author: "Dhruv Parekh"
+---
+##Assignment 2-Dhruv Parekh
+
+```{r}
+##install.packages("nycflights13")
+library(nycflights13)
+library(dplyr)
+```
+
+##Question 1a. How many flights were there to and from NYC in 2013?
+
+```{r}
+flights$origin<-as.factor(flights$origin)
+flights$dest<-as.factor(flights$dest)
+countflights<-flights%>%
+  summarise(count1=sum(!is.na(origin)),
+  count2=sum(dest=='EWR'|dest=='JFK' |dest=='LGA',na.rm=TRUE),count3=count1+count2)
+```
+
+Number of flights from NYC (includes EWR, LGA and JFK) is `r countflights$count3`
+
+##Question 1b. How many flights were there from NYC airports to Seattle (SEA) in 2013?
+
+```{r}
+countflights1<-flights%>%
+  summarise(count=sum(dest=='SEA',na.rm=TRUE))
+```
+Number of flights from NYC to Seattle is `r countflights1$count`
+
+##Question 1c. How many airlines fly from NYC to Seattle?
+
+```{r}
+countflights2<-flights%>%
+  filter(dest=='SEA')%>%
+  summarise(count=length(unique(carrier)))
+```
+There are `r countflights2$count` unique carriers from NYC to Seattle
+
+##Question 1d. What is the average arrival delay for flights from NYC to Seattle?
+
+```{r}
+avg_arr_delay_na<-flights%>%
+  filter(dest=='SEA')%>%
+  summarise(mean(arr_delay))
+```
+
+When the 'NA' values are considered, the average arrival delay is inappropriately calculated as 'NA' is non-numeric. In this case the average arrival delay is `r avg_arr_delay_na`
+
+```{r}
+avg_arr_delay<-flights%>%
+  filter(dest=='SEA')%>%
+  summarise(mean(arr_delay,na.rm=TRUE))
+```
+
+When the 'NA' values are omitted, the average arrival delay is `r avg_arr_delay`
+
+##Question 2a.What is the mean arrival delay time? What is the median arrival delay time?
+
+```{r}
+mean_arr_delay_time<-mean(flights$arr_delay,na.rm=TRUE)
+
+med_arr_delay_time<-median(flights$arr_delay,na.rm=TRUE)
+```
+
+The mean arrival delay time is `r mean_arr_delay_time` while the median arrival delay time is `r med_arr_delay_time`
+
+##Question 2b. What does a negative arrival delay mean?
+
+A negative arrival delay means that the flight arrived earlier that the scheduled arrival time.
+
+##Question 2c. Plot a histogram of arrival delay times. Does the answers you obtained in (a) consistent with the shape of the delay time distribution?
+
+```{r}
+hist(flights$arr_delay,main='Arrival Delay Time', xlab='Arrival delay time',
+xlim=c(min(flights$arr_delay,na.rm=TRUE),
+max(flights$arr_delay,na.rm=TRUE)))
+```
+
+From the plot it can be concluded that the arrival delay time is right skewed, with a high number of flights arriving before their scheduled arrival time.However, there are few flights which arrive very late. The answers obtained in 2a. are consistent with the plot. We can conclude from the plot that the mean is affected by the few points which have arrival delat time more than 200 (outliers). Median is where the distribution has equal probabilty above or below it.This is also in sync with 2a. 
+
+
+
+##Question 2d. Is there seasonality in departure delays? Describe what patterns you see. Is there a best month to leave New York? A worst? Why might this be?
+
+```{r}
+by(flights$dep_delay, flights$month, function(x) mean(x, na.rm=TRUE))
+```
+
+
+The best month to leave NY is November as it has the least average departure delay time. The reason could be due to low congestion (due to flights getting cancelled), low visibility due to snow. The worst month to leave NY is July as it has the highest average departure delay time. The reason could be due to slippery runway caused due to rain and thunderstorms and high congestion.
+
+
+##Question 3a. Plot a histogram of the total air flight time with 100 breaks.How many peaks do you see in this distribution? What is an explanation for this?
+
+```{r}
+hist(flights$air_time,breaks=100,
+     main="Histogram of Total Air Flight Time with breaks",xlab="Air flight time")
+hist(flights$air_time,
+     main="Histogram of Total Air Flight Time w/out breaks",xlab="Air flight time")
+```
+
+Breaks means the bins in which the values are to be aggregated. When no breaks are mentioned, the histogram bins are calculated by R and only one peak is shown.Mode is approx 12000. When breaks=100 is mentioned then there is one big peak shown while there are multiple peaks with values approx 10000 closer to the mode.The second histogram provides much more details than the first one.
+
+##Question 3b. What time of day do flights most commonly depart? Why might there be two most popular times of day to depart?
+```{r}
+count_depart<-flights%>%
+  na.omit()%>%
+  group_by(hour)%>%
+  summarise(count=n())
+```
+
+Maximum flights depart in the morning between 6-8am or in the afternoon from 3-5pm. This could be as people would like to travel and reach before afternoon for meetings or in the afternoon after completing their work.
+
+##Question 3c. Plot a box plot of departure delays and hour of departure. What pattern do you see? What is an explanation for this?
+```{r}
+boxplot(flights$dep_delay~flights$hour,main="Boxplot of departure hour vs departure delay",
+        xlab="Departure hour",
+        ylab="Departure delay",
+ylim=c(-50,100))
+```
+
+From the plot it can be seen that the median of departure delay increases as the day progresses and is highest at 21:00 hours. As the day progresses, there is high variation in departure delay (max and min whiskers). The maximum variation is seen at 21:00 hours. This could be due to the previous delays getting accumulated and affecting most at 21:00 hrs. After 21:00 hrs, there is again decrease in departure delay. 
+
+##Question 4. Develop one research question you can address using the nycflights2013 dataset. Provide two visualizations to support your exploration of this question. Discuss what you find.
+
+EDA1: OVer the year which carrier has maximum departure delay from NYC to SEA?
+
+```{r}
+avg_dep_delay<-flights%>%
+  filter(dest=="SEA")%>%
+  group_by(carrier)%>%
+  summarise(m=mean(dep_delay,na.rm=TRUE))
+plot(as.factor(avg_dep_delay$carrier),avg_dep_delay$m,type="p",
+     main="Average departure delay per carrier",xlab="carrier",ylab="Average departure delay")
+```
+
+From the plot it can be seen that for the same route NYC to SEA, carrier UA is worst affected by departure delays. Carrier AS is the most efficient with least affected by the departure delay.
+
+EDA2: For carrier UA, from NYC to SEA, which month has highest average departure delay
+
+```{r}
+UA_avg_dep_delay<-flights%>%
+  filter(dest=="SEA", carrier=="UA")%>%
+  group_by(month)%>%
+  summarise(m1=mean(dep_delay,na.rm=TRUE))
+plot(UA_avg_dep_delay$month,UA_avg_dep_delay$m1,type='l',
+     xlab="Month",ylab="Average departure delay",
+     main="Average departure delay for carrier UA per month")
+```
+
+The average departure delay for UA carrier on route NYC to SEA is maximum in the month july. This could be due to the thunderstorms and rain affecting the runways. Also, there could be low visibility during these times.

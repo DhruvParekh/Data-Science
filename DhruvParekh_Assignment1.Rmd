@@ -1,0 +1,219 @@
+---
+title: "DhruvParekh_Assignment1"
+output: pdf_document
+---
+## Question 1
+given data: 
+
+            independent non-independent(democrat+Republican) sample=2373, 
+            
+            
+swing voter  11%(261)          285(546-261)                 total=23% (546)
+
+non-swing    570(831-261)      
+
+total        35%(831)
+
+Question 1a.
+
+As the proportion is varying across Independent column and across rows, being Independent and being swing voter is not disjoint
+
+Question 1b.
+
+independent voters but not swing= 570 voters = 24% (570/2373)*100
+
+Question 1c.
+
+P(ind or swing voters)=P(ind)+P(swing)-P(both)=(831+546-261)*100/2373=1116*100/2373=47.02%
+
+Question 1d.
+
+neither independent nor swing = 100-47.02=52.98%
+
+Question 1e.
+
+for independent variables P(A and B)=P(A)*P(B). 
+Here, P(ind)*P(swing)=0.35*0.23=0.08 ; P(ind and swing) = 0.11
+
+##Question 2
+
+Question 2a.
+
+```{r}
+setwd("F:/Uwash/Courses/WIN17/INFX573/Assignments/Assignment1")
+felixstats <- read.csv("FelixHernandez2015.csv")
+library(dplyr)
+count_wins<-sum(felixstats$W)
+```
+
+`r count_wins` wins for Felix this year
+
+Question 2b.
+
+```{r}
+meanso <- mean(felixstats$SO)
+medianso <- median(felixstats$SO)
+mode= function(x) {
+  ux <- unique(x)
+  ux[which.max(tabulate(match(x,ux)))]
+}
+modeso <- mode(felixstats$SO)
+```
+
+Average strike outs this year `r meanso` 
+
+Question 2c.
+
+```{r}
+plot(felixstats$IP, felixstats$SO, xlab = "Innings Pitched", ylab="Strike Outs", main="Strike outs per innings")
+abline(lm(felixstats$SO~felixstats$IP))
+```
+
+This plot has a positive slope which means that as the pitcher plays more innings, he is able to make more strike outs
+
+
+```{r}
+plot(felixstats$IP, felixstats$BB, xlab = "Innings Pitched", ylab="Base on balls", main="Base on balls per innings")
+abline(lm(felixstats$BB~felixstats$IP))
+```
+
+This plot has a negative slope which means that as the pitcher plays more innings, his ability to put base on balls decreases
+and he becomes better at pitching
+
+Question 2d.
+
+```{r}
+cor(felixstats$IP,felixstats$SO)
+```
+
+correlation value between innings pitched and strike outs is +0.6816. It gives a strong linear relation between these variables. It aligns with the plot
+
+```{r}
+cor(felixstats$IP,felixstats$BB)
+```
+
+correlation value between innings pitched and base on balls is -0.2638.It gives a weak linear relation between these variables as it is close to 0. It aligns with the plot
+
+Question 2e.
+
+
+```{r}
+meanmonth<-felixstats%>%
+  group_by(Month)%>%
+  summarise(meanbb=mean(BB,na.rm=TRUE))
+
+meanmonth$Month<-factor(meanmonth$Month,levels=c("Apr","May","Jun","Jul","Aug","Sep"))
+
+meanmonth[order(meanmonth$Month,meanmonth$meanbb),]
+plot(meanmonth$Month,meanmonth$meanbb,xlab="Month",ylab="Walks",main="Mean Walks over time")
+```
+
+
+```{r}
+meanvar<-felixstats%>%
+  group_by(Month)%>%
+  summarise(varbb=var(BB))
+meanvar$Month<-factor(meanvar$Month,levels=c("Apr","May","Jun","Jul","Aug","Sep"))
+
+meanvar[order(meanvar$Month,meanvar$varbb),]
+plot(meanvar$Month,meanvar$varbb,xlab="Month",ylab="Walks",main="Variance Walks over time")
+```
+From the plots it can be deduced that the performance of the pitcher decreases (as he gives more walks) from apr to June and then it improves till Aug. But again in Sep his performance decreases. 
+
+Question 2f.
+
+```{r}
+awayhome<-felixstats%>%
+  group_by(away)%>%
+  filter(W==1)%>%
+  count(W)
+awayhome
+```
+
+From this it can be deduced that there are more home wins than away wins
+
+Question 2g.
+
+```{r}
+randystats<-read.csv("RandyJohnson1995.csv")
+count_matches_randy<-randystats%>%
+  count(SO)%>%
+  summarise(sum(n))
+ave_randy<-sum(randystats$SO)/count_matches_randy
+```
+
+Average of randy is `r ave_randy`
+
+```{r}
+count_matches_felix<-felixstats%>%
+  count(SO)%>%
+  summarise(sum(n))
+ave_felix<-sum(felixstats$SO)/count_matches_felix
+```
+
+Average of felix is `r ave_felix`
+
+Since the average of Randy is higher than Felix, Randy outperforms Helix
+  
+  
+##Question 3
+
+Question 3.a
+
+```{r}
+vmean<-151
+vsd<-7
+vscore<-160
+verbal_zscore<-(vscore-vmean)/vsd
+qmean<-153
+qsd<-7.67
+qscore<-157
+quant_zscore<-(qscore-qmean)/qsd
+```
+
+Z score of verbal is `r verbal_zscore` , Z score of quant is `r quant_zscore`
+
+Question 3b.
+
+```{r}
+x <- seq(-4,4,length.out=1000)
+plot(x, dnorm(x,mean=0, sd=1), main='Standard normal curve',xlab="Standardized normal scores",ylab="probabilty",type='l')
+abline(v=verbal_zscore)
+abline(v=quant_zscore,col='Red',lty=2)
+legend("topleft",legend=c("Verbal score","Quant score"),lty=c(1,2),col=c("Black","Red"))
+```
+
+
+Question 3c.
+
+From the plot it can be deduced that Sophia scored better marks in verbal
+
+Question 3d.
+
+Percentile score in Verbal: 0.9007 i.e. 90.07%
+
+```{r}
+pnorm(verbal_zscore)
+```
+
+Percentile score in quant: 0.6989 i.e. 69.89%
+
+```{r}
+pnorm(quant_zscore)
+```
+
+Question 3e.
+
+Students who scored higher than Sophia in verbal: 0.0993 i.e. 9.93%
+
+```{r}
+stud_vscore<- 1-pnorm(verbal_zscore)
+stud_vscore
+```
+
+Students who scored higher than Sophia in quant: 0.3011 i.e. 30.11%
+
+```{r}
+stud_qscore<- 1-pnorm(quant_zscore)
+stud_qscore
+```

@@ -1,0 +1,62 @@
+---
+title: "Lab3"
+author: "Dhruv Parekh"
+date: "9 February 2017"
+output: pdf_document
+---
+##Question 1.
+```{r}
+load("BostonData.Rdat")
+plot(boston)
+```
+
+```{r}
+mod1<-lm(home.value~NO.concentration,data=boston)
+summary(mod1)
+```
+
+From the summary details it can be concluded that there is a negative association between home value and NO concentration. For one unit increase in NO concentration, there is 33916$ decrease in the home value. Assuming the null hypothesis is true, the probability of No concentration is 2e-16.
+
+Equation: Home value = 41.346 -33.916*No.concentration
+
+```{r}
+mod2<-lm(home.value~distance.to.work,data=boston)
+summary(mod2)
+```
+
+From the summary it can be concluded that there is a positive association between distance.to.work and home value. For one unit increase in distance to work, there is 1091$ unit increase in the home value. Assuming the null hypothesis is true, the probability of distance.to.work is 1.21e-08
+
+Equation: home value = 18.3901 + 1.0916*distance to work
+
+
+```{r}
+mod3<-lm(home.value~student.teacher.ratio,data=boston)
+summary(mod3)
+```
+
+From the summary it can be concluded that there is a negative association between the home value and the student teacher ratio. As the student teacher ratio increases by one unit, there is a decrease in the home value by 2157$. Assuming the null hypothesis is true, the probability of student teacher ratio is 2e-16.
+
+Equation: Home value = 62.345 -2.157*student teacher ratio 
+
+##Question 2.
+The adjusted R squared value is highest for the student teacher ratio (0.2564). Hence it is a stronger predictor as compared to the other two predictor variables. The distance to work predictor has the least adjusted R-squared value of 0.0606. Hence it is the worst predictor of the fit.
+
+##Question 3.
+```{r}
+mod.full<-lm(home.value~distance.to.work + NO.concentration + student.teacher.ratio,
+             data=boston)
+summary(mod.full)
+```
+
+From the summary it can be seen that the NO conentration and student.teacher.ratio are better predictors as compared to distance.to.work. Distance to work is a confoudning variable. When all the predictors are considered togethor, the p value of ditance.to.work increases and the slope decreases.So keeping the student teacher ratio and NO concentration constant, for one unit increase in distance to work, there is 1280$ decrease in the home value.
+
+##Question 4.
+The adjusted R-squared value is 0.4026 in the full linear model as compared to the individual models. This means that when all the 3 variables are considered togethor, it fits the data points better. There is less variability in the data points for the model with all the 3 variables.
+
+##Question 5.
+```{r}
+predict(mod.full,newdata=data.frame("distance.to.work"=3,"NO.concentration"=0.35,
+                                    "student.teacher.ratio"=10),interval="prediction")
+```
+
+For a 95% confidence interval, the predicted value of home value is 49574.99$, with an inexpensive house value as 35227.37$ and costliest house with value 63922.61$.

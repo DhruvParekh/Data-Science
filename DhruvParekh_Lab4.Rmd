@@ -1,0 +1,125 @@
+---
+title: "Lab4"
+author: "Dhruv Parekh"
+date: "16 February 2017"
+output: pdf_document
+---
+
+##1. Load the data
+```{r}
+data<-read.csv("census data.csv")
+data$income.g50<-rep(0,nrow(data))
+data$income.g50[data$income==" >50K"]<-1
+```
+
+
+##2. Exploring Relationships I
+```{r}
+mod<-glm(income.g50~education+age+sex+race,
+         data=data[,!colnames(data)%in%"income"],family="binomial")
+summary(mod)
+```
+
+Odds ratio for master's degree is e^2.910088 i.e. 18.35.
+Hence, the odds that a person having a master's degree will have an income greater than 50K is 18.35.
+
+Odds ratio for a 1st-4th grade education is e^(-0.180178) i.e. 0.835.
+Hence, the odds that a person with 1st-4th grade education having a master's degree will have an income greater than 50K is 0.835.
+
+From the summary it can be seen that having a master's degree is statistically significant (p value is <2e-16) while having an education between 1st-4th grade is not significant (p-value is 0.78371).
+
+If we do multiple comparisons, then the p-value for education Assoc-acdm, Assoc-voc, Bachelor's, Doctorate, Hs-grad, Masters, prof-School, some-coll, age and sex is too low (in comparison with 0.05). Hence, these will be better predictors of the income level and it is less likely for it to be by chance.
+
+
+##Question 2b.
+
+Age and Sex are highly significant factors as their p-value is <2e^16. The odds ratio for age is e^0.043369 i.e. 1.044. The odds ratio for male is e^1.291684 i.e. 3.63. Hence, practically it means that age is a fair predictor as with age, your experience increases and it is likely you have a higher income. Sex is not a fair predictor as the income changes by 3.63 times for men as compared to women.
+
+
+##Question 3.
+
+```{r}
+x<-data$age
+plot(x,data$income.g50,col="blue")
+fits<-fitted(mod)
+points(x,fits,pch=19,cex=0.3)
+```
+
+The predicted values are variable, as the other predictors are not considered. Age is not only the sole predictor, so if the plot uses other variables such as education, there will be less variability.  
+
+##Question 4.
+```{r}
+tab<-table(data$income.g50,fits>=0.5)
+lpe<-(tab[1,2]+tab[2,1])/sum(tab)
+
+tab1<-table(data$income.g50,fits>=0.25)
+lpe1<-(tab1[1,2]+tab1[2,1])/sum(tab1)
+
+tab2<-table(data$income.g50,fits>=0.75)
+lpe2<-(tab2[1,2]+tab2[2,1])/sum(tab2)
+```
+
+By comparing the lowest errors of the 3 cut off values, the lowest value is for cut off value 0.5. Hence, this is a better cut-off value as compared to the other two.
+
+
+##Question 5.
+```{r}
+#install.packages("AUC")
+library(AUC)
+
+y<-factor(data$income.g50)
+rr<-roc(fits,y)
+plot(rr)
+auc(rr)
+```
+
+##Question 5b.
+
+The model has an AUC of `r auc(rr)`. This means that the logistic regression model will correctly predict the income 80% of the times considering the predictors as education, race, age and sex. The fit is good but not the best fit.
+
+##Question 6a.
+```{r}
+mod1<-glm(income.g50~.,
+          data=data[,!colnames(data)%in%c("income")],family="binomial")
+summary(mod1)
+```
+
+From the summary, it can be seen that the main predictors in education level remain same across both the models. However, the p-value has decreased slightly in the new model for higher education levels such as bachelor's degree. Also, the slope coefficient of income with a unit increase in education level has decreased in the new model.
+
+##Question 6b.
+```{r}
+x1<-data$age
+plot(x1,data$income.g50,col="blue")
+fits1<-fitted(mod1)
+points(x1,fits1,pch=19,cex=0.3)
+```
+
+The predicted probabilities in the newer model is poor and has more variation as compared to the older model. This is because there are more predictors in the newer model as compared to the older one, hence we are trying to overfit the data.
+
+##Question 6c.
+
+```{r}
+new_tab<-table(data$income.g50,fits1>=0.5)
+new_lpe<-(new_tab[1,2]+new_tab[2,1])/sum(new_tab)
+
+new_tab1<-table(data$income.g50,fits1>=0.25)
+new_lpe1<-(new_tab1[1,2]+new_tab1[2,1])/sum(new_tab1)
+
+new_tab2<-table(data$income.g50,fits1>=0.75)
+new_lpe2<-(new_tab2[1,2]+new_tab2[2,1])/sum(new_tab2)
+```
+
+
+By comparing the lowest percentage error of the 3 cut off values for the new model, the error value is for cut off value 0.5. Hence, it is a better cut-off value as compared to the other two cut-off values for the new model. Overall, the percent error is lower for the newer model in comparison to the old model, hence its performance is higher.
+
+
+##Question 6d.
+```{r}
+y1<-factor(data$income.g50)
+rr1<-roc(fits1,y1)
+plot(rr1)
+auc(rr1)
+```
+
+The new model has an AUC of `r auc(rr1)`. This is higher as compared to the previous model and hence the new model is better.
+
